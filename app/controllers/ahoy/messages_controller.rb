@@ -1,8 +1,10 @@
 module Ahoy
   class MessagesController < ActionController::Base
     if respond_to? :before_action
+      before_action :check_referrer
       before_action :set_message
     else
+      before_filter :check_referrer
       before_filter :set_message
     end
 
@@ -16,18 +18,27 @@ module Ahoy
     end
 
     def click
-      if @message && !@message.clicked_at
-        @message.clicked_at = Time.now
-        @message.opened_at ||= @message.clicked_at
-        @message.save!
-      end
       url = params[:url].to_s
-      signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, url)
-      publish :click, url: params[:url]
-      if secure_compare(params[:signature].to_s, signature)
+
+      # rescue any error and redirect to original URL to avoid seeing 500 errors
+      begin
+        if @message && !@message.clicked_at
+          @message.clicked_at = Time.now
+          @message.opened_at ||= @message.clicked_at
+          @message.save!
+        end
+
+        signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, url)
+        publish :click, url: params[:url]
+        if secure_compare(params[:signature].to_s, signature)
+          redirect_to url
+        else
+          redirect_to AhoyEmail.invalid_redirect_url || main_app.root_url
+        end
+      rescue StandardError => e
+        Honeybadger.notify(e)
+
         redirect_to url
-      else
-        redirect_to AhoyEmail.invalid_redirect_url || main_app.root_url
       end
     end
 
@@ -57,6 +68,12 @@ module Ahoy
       res = 0
       b.each_byte { |byte| res |= byte ^ l.shift }
       res == 0
+    end
+
+    # Only allow external opens and clicks
+    def check_referrer
+      uri_ref = URI.parse(request.referrer)
+      return if uri_ref.host == "outreach.reachnetwork.com"
     end
   end
 end
