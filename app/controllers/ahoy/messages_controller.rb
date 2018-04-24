@@ -73,7 +73,7 @@ module Ahoy
     # Only allow external opens and clicks
     def check_referrer
       uri_ref = URI.parse(request.referrer)
-      return if uri_ref.host == "outreach.reachnetwork.com"
+      return if ["outreach.reachnetwork.com", "outreach.staging.reachnetwork.com", "outreach.test"].include?(uri_ref.host)
     end
   end
 end
