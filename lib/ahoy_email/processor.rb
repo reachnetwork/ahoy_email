@@ -142,6 +142,9 @@ module AhoyEmail
       elsif link["href"].to_s =~ /unsubscribe/i && !options[:unsubscribe_links]
         # try to avoid unsubscribe links
         true
+      elsif link["href"].to_s.include?("/ahoy/messages/")
+        # don't reparse links with ahoy tracking
+        true
       else
         false
       end

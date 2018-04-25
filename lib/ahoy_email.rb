@@ -36,15 +36,19 @@ module AhoyEmail
   end
 
   class << self
-    attr_writer :message_model, :processor
+    attr_writer :message_model, :processor, :blacklisted_referrers
   end
 
   def self.message_model
     (defined?(@message_model) && @message_model) || ::Ahoy::Message
   end
-      
+
   def self.processor
     (defined?(@processor) && @processor) || ::AhoyEmail::Processor
+  end
+
+  def self.blacklisted_referrers
+    (defined?(@blacklisted_referrers) && @blacklisted_referrers) || []
   end
 end
 

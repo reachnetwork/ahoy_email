@@ -12,8 +12,10 @@ module Ahoy
       if @message && !@message.opened_at
         @message.opened_at = Time.now
         @message.save!
+
+        publish :open
       end
-      publish :open
+
       send_data Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="), type: "image/gif", disposition: "inline"
     end
 
@@ -26,10 +28,12 @@ module Ahoy
           @message.clicked_at = Time.now
           @message.opened_at ||= @message.clicked_at
           @message.save!
+
+          publish :click, url: params[:url]
         end
 
         signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, url)
-        publish :click, url: params[:url]
+
         if secure_compare(params[:signature].to_s, signature)
           redirect_to url
         else
@@ -72,8 +76,10 @@ module Ahoy
 
     # Only allow external opens and clicks
     def check_referrer
-      uri_ref = URI.parse(request.referrer)
-      return if ["outreach.reachnetwork.com", "outreach.staging.reachnetwork.com", "outreach.test"].include?(uri_ref.host)
+      if request.referrer.present?
+        uri_ref = URI.parse(request.referrer)
+        return if AhoyEmail.blacklisted_referrers.include?(uri_ref.host)
+      end
     end
   end
 end
