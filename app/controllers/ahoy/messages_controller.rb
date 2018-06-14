@@ -28,9 +28,9 @@ module Ahoy
           @message.clicked_at = Time.now
           @message.opened_at ||= @message.clicked_at
           @message.save!
-
-          publish :click, url: params[:url]
         end
+        
+        publish :click, url: params[:url]
 
         signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, url)
 
