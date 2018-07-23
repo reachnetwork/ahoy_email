@@ -20,19 +20,19 @@ module Ahoy
     end
 
     def click
-      url = params[:url].to_s
-
       # rescue any error and redirect to original URL to avoid seeing 500 errors
       begin
+        url = params[:url].to_s
+        decoded_params
+        url = params[:url].to_s
+
         if @message && !@message.clicked_at
           @message.clicked_at = Time.now
           @message.opened_at ||= @message.clicked_at
           @message.save!
         end
 
-        updated_url = publish :click, url: params[:url]
-
-        url = updated_url if url.blank? && updated_url.is_a?(String)
+        publish :click, url: url
 
         signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, url)
 
@@ -62,6 +62,24 @@ module Ahoy
           subscriber.send name, event
         end
       end
+    end
+
+    # This is to handle cases where the params get encoded improperly
+    def decoded_params
+      keys = params.keys
+      bad_key = keys.select do |k|
+        k.include?("signature=")
+      end.first
+
+      return if bad_key.blank?
+
+      decoded = CGI.parse(CGI.unescape(bad_key)).transform_values(&:first)
+
+      return if decoded["url"].blank?
+
+      params[:signature] = decoded["signature"]
+      params[:url] = decoded["url"]
+      params[:url] += "&utm_medium=email" if params[:url].exclude?("utm_medium")
     end
 
     # from https://github.com/rails/rails/blob/master/activesupport/lib/active_support/message_verifier.rb
