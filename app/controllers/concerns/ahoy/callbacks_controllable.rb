@@ -12,7 +12,7 @@ module Ahoy::CallbacksControllable
     return if callback_params[:id].blank? || callback_params[:signature].blank?
 
     begin
-      uri = URI("#{AhoyEmail.tracking_callback_url}/#{callback_params[:id]}/#{callback_params[:utm_action]}")
+      uri = URI("#{AhoyEmail.tracking_callback_url}/#{callback_params[:atid]}/#{callback_params[:utm_action]}")
       dupe_callback_params = callback_params.to_h
       dupe_callback_params[:redirect] = false
       dupe_callback_params[:url] = "#{request.scheme}://www.#{request.host}#{request.path}"
@@ -27,7 +27,7 @@ module Ahoy::CallbacksControllable
 
   def callback_params
     params.permit(
-      :id,
+      :atid,
       :signature,
       :utm_source,
       :utm_medium,

@@ -113,9 +113,7 @@ module AhoyEmail
           end
 
           if options[:click] && !skip_attribute?(link, "click")
-            signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, link["href"])
-            params << [:id, ahoy_message.token]
-            params << [:signature, signature]
+            params << [:atid, ahoy_message.token]
             params << [:utm_action, "click"]
           end
 
