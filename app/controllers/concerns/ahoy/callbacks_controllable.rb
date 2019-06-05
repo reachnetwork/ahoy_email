@@ -9,7 +9,7 @@ module Ahoy::CallbacksControllable
   # This will parse the parameters and then send a get request to the appropriate url
   def tracking_callback
     return if AhoyEmail.tracking_callback_url.blank?
-    return if callback_params[:id].blank? || callback_params[:signature].blank?
+    return if callback_params[:atid].blank?
 
     begin
       uri = URI("#{AhoyEmail.tracking_callback_url}/#{callback_params[:atid]}/#{callback_params[:utm_action]}")
@@ -28,10 +28,6 @@ module Ahoy::CallbacksControllable
   def callback_params
     params.permit(
       :atid,
-      :signature,
-      :utm_source,
-      :utm_medium,
-      :utm_campaign,
       :utm_action,
       :path
     )
