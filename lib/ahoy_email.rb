@@ -10,7 +10,7 @@ require "ahoy_email/engine"
 require "ahoy_email/version"
 
 module AhoyEmail
-  mattr_accessor :secret_token, :options, :subscribers, :belongs_to, :invalid_redirect_url
+  mattr_accessor :secret_token, :options, :subscribers, :belongs_to, :invalid_redirect_url, :tracking_callback_url
 
   self.options = {
     message: true,
@@ -30,6 +30,8 @@ module AhoyEmail
   self.subscribers = []
 
   self.belongs_to = {}
+
+  self.tracking_callback_url = ""
 
   def self.track(options)
     self.options = self.options.merge(options)

@@ -99,6 +99,8 @@ module AhoyEmail
         doc = Nokogiri::HTML(body.raw_source)
         doc.css("a[href]").each do |link|
           uri = parse_uri(link["href"])
+          params = []
+
           next unless trackable?(uri)
           # utm params first
           if options[:utm_params] && !skip_attribute?(link, "utm-params")
@@ -107,21 +109,16 @@ module AhoyEmail
               next if params.any? { |k, _v| k == key } || !options[key.to_sym]
               params << [key, options[key.to_sym]]
             end
-            uri.query_values = params
-            link["href"] = uri.to_s
+
           end
 
           if options[:click] && !skip_attribute?(link, "click")
-            signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha1"), AhoyEmail.secret_token, link["href"])
-            link["href"] =
-              url_for(
-                controller: "ahoy/messages",
-                action: "click",
-                id: ahoy_message.token,
-                url: link["href"],
-                signature: signature
-              )
+            params << [:atid, ahoy_message.token]
+            params << [:utm_action, "click"]
           end
+
+          uri.query_values = params
+          link["href"] = uri.to_s
         end
 
         # hacky
