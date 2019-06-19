@@ -15,7 +15,7 @@ module Ahoy::CallbacksControllable
       uri = URI("#{AhoyEmail.tracking_callback_url}/#{callback_params[:atid]}/#{callback_params[:utm_action]}")
       dupe_callback_params = callback_params.to_h
       dupe_callback_params[:redirect] = false
-      dupe_callback_params[:url] = "#{request.scheme}://www.#{request.host}#{request.path}"
+      dupe_callback_params[:url] = "#{request.scheme}://#{request.host.include?("www.") ? request.host : "www.#{request.host}"}#{request.path}"
       uri.query = URI.encode_www_form(dupe_callback_params)
       Net::HTTP.get_response(uri)
     rescue StandardError => e
