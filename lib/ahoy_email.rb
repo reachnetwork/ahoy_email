@@ -31,7 +31,14 @@ module AhoyEmail
 
   self.belongs_to = {}
 
-  self.tracking_callback_url = "" if self.tracking_callback_url.nil?
+  self.tracking_callback_url = case Rails.env
+  when 'production'
+    'https://outreach.reachnetwork.com/ahoy/messages'
+  when 'staging'
+    'https://outreach.staging.reachnetwork.com/ahoy/messages'
+  else
+    'http://outreach.reachnetwork.test/ahoy/messages'
+  end
 
   def self.track(options)
     self.options = self.options.merge(options)
