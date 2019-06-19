@@ -31,7 +31,7 @@ module AhoyEmail
 
   self.belongs_to = {}
 
-  self.tracking_callback_url = ""
+  self.tracking_callback_url = "" if self.tracking_callback_url.nil?
 
   def self.track(options)
     self.options = self.options.merge(options)
