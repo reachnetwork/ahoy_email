@@ -117,7 +117,7 @@ module AhoyEmail
             params << [:utm_action, "click"]
           end
 
-          uri.query_values = params
+          uri.query_values = params if params.present?
           link["href"] = uri.to_s
         end
 
